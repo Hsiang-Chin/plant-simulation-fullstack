@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant V as Vue 前端
+    participant F as FastAPI 後端
+    participant S as Plant Simulation
+
+    Note over S,F: ① 狀態上報流（模擬 → 前端）
+    S->>F: Socket 傳送 JSON (庫存量/AGV位置/異常事件)
+    F->>F: 寫入 PostgreSQL
+    F->>V: WebSocket 廣播最新狀態
+    V->>V: 更新儀表板畫面
+
+    Note over V,S: ② 控制指令流（前端 → 模擬）
+    V->>F: REST API POST /commands (例如：觸發第3號AGV搬運)
+    F->>F: 驗證指令 + 轉換成 SimTalk 可解析格式
+    F->>S: Socket 傳送控制指令
+    S->>S: 模擬端執行動作
+    S->>F: 回傳執行結果/新狀態
+    F->>V: WebSocket 推播更新後狀態

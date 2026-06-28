@@ -1,0 +1,43 @@
+flowchart TB
+    subgraph SIM["🏭 模擬層 — Plant Simulation"]
+        PS["Tecnomatix Plant Simulation<br/>倉儲 3D 模擬模型<br/>(輸送帶/AGV/貨架/機械手)"]
+        SOCKOBJ["Socket 通訊物件<br/>(SimTalk 控制)<br/>傳送/接收 JSON 字串"]
+        PS <--> SOCKOBJ
+    end
+
+    subgraph DOCKER["🐳 Docker Compose 環境"]
+        subgraph BACKEND["FastAPI 後端容器"]
+            SH["Socket Handler<br/>asyncio TCP Server<br/>(常駐背景任務)"]
+            PARSER["資料解析 / 指令封裝<br/>Pydantic Schema"]
+            WSM["WebSocket Manager<br/>(ConnectionManager 廣播)"]
+            REST["REST API Router<br/>/inventory /equipment<br/>/commands"]
+            DAL["Data Access Layer<br/>SQLAlchemy (async) + asyncpg"]
+
+            SH --> PARSER
+            PARSER --> DAL
+            PARSER --> WSM
+            REST --> SH
+            REST --> DAL
+        end
+
+        DB[("PostgreSQL<br/>pg_db Container<br/>庫存/設備狀態/歷史紀錄")]
+        DAL <--> DB
+    end
+
+    subgraph FRONTEND["💻 Vue ERP 前端"]
+        DASH["即時監控儀表板<br/>庫存熱力圖 / 設備狀態燈"]
+        CTRL["控制面板<br/>觸發搬運 / 調整參數"]
+        WSC["WebSocket Client<br/>(Pinia store 接收狀態)"]
+        AXIOS["Axios REST Client"]
+
+        DASH --> WSC
+        CTRL --> AXIOS
+    end
+
+    SOCKOBJ <-->|"TCP Socket (雙向)<br/>① 狀態回報 (位置/庫存/異常)<br/>② 控制指令 (搬運/參數)"| SH
+    WSM -->|"WebSocket<br/>即時狀態推播"| WSC
+    AXIOS -->|"HTTP REST<br/>控制指令 / 查詢歷史"| REST
+
+    style SIM fill:#fff3e0
+    style DOCKER fill:#e3f2fd
+    style FRONTEND fill:#e8f5e9

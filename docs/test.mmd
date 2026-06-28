@@ -1,0 +1,28 @@
+graph TD
+    %% 定義節點
+    User([使用者])
+    Frontend[前端畫面]
+    FastAPI[FastAPI 後端 API]
+    DB[(資料庫 DB)]
+    PlantSim[Plant Simulation Web Server]
+
+    %% 流程連接
+    User -->|1. 操作畫面| Frontend
+    Frontend -->|2. 透過畫面建立裝置| Frontend
+    Frontend -->|3. 送出 Request_POST| FastAPI
+    
+    subgraph 後端處理程序
+        FastAPI -->|4. 處理 Request| FastAPI
+        FastAPI -->|5. 新增資料到 DB| DB
+        FastAPI -->|6. 發送 HTTP POST/GET| PlantSim
+        PlantSim -->|7. 觸發 SimTalk 建立裝置| PlantSim
+    end
+
+    FastAPI -->|8. 回傳處理結果| Frontend
+    Frontend -->|9. 更新畫面渲染| Frontend
+    User -->|10. 在前端看到新的裝置| Frontend
+
+    %% 樣式調整
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style DB fill:#9cf,stroke:#333,stroke-width:2px
+    style PlantSim fill:#ff9,stroke:#333,stroke-width:2px

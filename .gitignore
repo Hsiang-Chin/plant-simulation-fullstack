@@ -1,0 +1,2 @@
+# 忽略所有 __pycache__ 資料夾
+__pycache__/

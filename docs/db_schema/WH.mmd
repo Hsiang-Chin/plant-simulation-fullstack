@@ -1,0 +1,71 @@
+erDiagram
+
+    SKU {
+        string sku_id PK
+        float length
+        float width
+        float height
+        float weight
+        string type
+    }
+
+    STORAGE_LOCATION {
+        string location_id PK
+        string type
+        float capacity_weight
+        float capacity_volume
+        float max_height
+        boolean is_cold_storage
+    }
+
+    INVENTORY {
+        string inventory_id PK
+        string sku_id FK
+        string location_id FK
+        int quantity
+        datetime last_update
+    }
+
+    INBOUND_SHIPMENT {
+        string inbound_id PK
+        datetime arrival_time
+        string dock_id FK
+    }
+
+    INBOUND_ITEM {
+        string inbound_item_id PK
+        string inbound_id FK
+        string sku_id FK
+        int quantity
+    }
+
+    OUTBOUND_ORDER {
+        string order_id PK
+        datetime order_time
+        string status
+    }
+
+    OUTBOUND_ITEM {
+        string outbound_item_id PK
+        string order_id FK
+        string sku_id FK
+        int quantity
+    }
+
+    DOCK {
+        string dock_id PK
+        string name
+        string type
+    }
+
+    %% Relationships
+    SKU ||--o{ INVENTORY : stored_in
+    STORAGE_LOCATION ||--o{ INVENTORY : contains
+
+    INBOUND_SHIPMENT ||--o{ INBOUND_ITEM : includes
+    SKU ||--o{ INBOUND_ITEM : received_as
+
+    OUTBOUND_ORDER ||--o{ OUTBOUND_ITEM : contains
+    SKU ||--o{ OUTBOUND_ITEM : shipped_as
+
+    DOCK ||--o{ INBOUND_SHIPMENT : receives
